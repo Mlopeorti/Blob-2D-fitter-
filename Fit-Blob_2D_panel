@@ -34,7 +34,7 @@ runfile('fun_select.py')
 
 ################## Import files
 
-file_name="us200_ut500mV_PSI_COOH_PBS_sp05nA_0015_2outof2.b.txt"
+file_name="example.txt"
 iter_on_file=1
 image= np.loadtxt(file_name,skiprows=5)
 
