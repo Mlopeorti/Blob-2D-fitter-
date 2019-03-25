@@ -1,0 +1,188 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Dec 22 15:56:37 2016
+
+@author: mlopezo
+"""
+####################################################################################################################
+
+# This scripts uses Adam Ginsburg Gaussfitter code to fit 2D Gaussians
+
+#https://github.com/keflavich/gaussfitter
+
+################ HOW TO USE THE SCRIPT ##############################################################################
+
+# Image files to treat have to be in .txt format and contain a matrix with heigth of each pixel (grayscale no rgb) 
+# with "." as decimal separator and "tab" for column separator.
+# Insert file name 
+# Insert pixel size ratio
+# Insert number of objects to fit
+
+#Run script 
+
+# for N= number of objects to fit:
+
+#select a region by cliking two points in the image to define a window
+#decide wether the fit is ok or not 
+
+#####################################################################################################################
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from gaussfitter import gaussfit
+runfile('fun_select.py')
+
+################## Import files
+
+file_name="us200_ut500mV_PSI_COOH_PBS_sp05nA_0015_2outof2.b.txt"
+iter_on_file=1
+image= np.loadtxt(file_name,skiprows=5)
+
+################## Plot images and define windows
+fig = plt.figure()
+pa = plt.subplot2grid((5, 3), (0,0),colspan=3,rowspan=3)
+pb = plt.subplot2grid((5, 3), (4,2),colspan=1,rowspan=1)
+pc = plt.subplot2grid((5, 3), (3,2),colspan=1,rowspan=1)
+pd = plt.subplot2grid((5, 3), (3,0),colspan=2,rowspan=2, projection='3d')
+
+pa.set_yticklabels([])
+pa.set_xticklabels([])
+pb.set_yticklabels([])
+pb.set_xticklabels([])
+pc.set_yticklabels([])
+pc.set_xticklabels([])
+
+pa.imshow(image,cmap='gray',aspect=0.75)
+
+#Define Variables
+Nmax=5 # Number of objects to fit
+output=np.zeros((Nmax,6))
+
+#Scale Image
+x_amplitude = 208.984 #input scan size in nm (is in txt file)
+y_amplitude =  363.672
+pixel_size_x=np.true_divide(x_amplitude,image.shape[1])
+pixel_size_y=np.true_divide(y_amplitude,image.shape[0])
+
+
+for i in range(Nmax):
+    A1=''
+    A2=''
+    A3=''
+    fig.suptitle("Region Selection: %s" %i)
+    pa.set_title("Click 2 points to select a region")    
+    c_input= plt.ginput(2)
+    corners = frame( np.concatenate(c_input) )
+    im=select_image(corners,image)    
+    pb.imshow(im,cmap='gray')            
+    pa.plot([corners[0],corners[1]],[corners[2],corners[2]],color='red')    
+    pa.plot([corners[0],corners[1]],[corners[3],corners[3]],color='red')  
+    pa.plot([corners[0],corners[0]],[corners[2],corners[3]],color='red')  
+    pa.plot([corners[1],corners[1]],[corners[2],corners[3]],color='red')  
+    pa.set_xlim(0, image.shape[1])
+    pa.set_ylim(image.shape[0], 0)
+    
+    
+    x=range(corners[0],corners[1])
+    y=range(corners[2],corners[3])
+    X, Y = np.meshgrid(x, y)     
+    pd.plot_wireframe(X, Y, im)
+    
+    pc.text(1,2.5,'NO',fontsize=25, color='red')
+    pc.text(1,7.5,'YES',fontsize=25, color='green')
+    pc.plot([0.1,0.1,0.1],color='red',)
+    pc.plot([4.9,4.9,4.9],color='red')
+    pc.plot([5.1,5.1,5.1],color='green')
+    pc.plot([9.9,9.9,9.9],color='green')
+    pc.axis([0,2,0,10])    
+
+
+
+    pc.set_title("Is region OK? ")               
+    A1 = point_ans(plt.ginput(1)[0][1])
+    
+    
+    while A1 == 'No':         
+        fig.delaxes(pd)
+        fig.delaxes(pb)
+        plt.draw()        
+        pb = plt.subplot2grid((5, 3), (4,2),colspan=1,rowspan=1)       
+        pd = plt.subplot2grid((5, 3), (3,0),colspan=2,rowspan=2, projection='3d')
+
+        c_input= plt.ginput(2)
+        corners = frame( np.concatenate(c_input) )
+        im=select_image(corners,image)    
+        pa.plot([corners[0],corners[1]],[corners[2],corners[2]],color='red')    
+        pa.plot([corners[0],corners[1]],[corners[3],corners[3]],color='red')  
+        pa.plot([corners[0],corners[0]],[corners[2],corners[3]],color='red')  
+        pa.plot([corners[1],corners[1]],[corners[2],corners[3]],color='red')        
+        pa.set_xlim(0, image.shape[1])
+        pa.set_ylim(image.shape[0], 0)        
+        pb.imshow(im,cmap='gray')            
+      
+        x=range(corners[0],corners[1])
+        y=range(corners[2],corners[3])
+        X, Y = np.meshgrid(x, y)  
+        pd.plot_wireframe(X, Y, im)
+        
+        pc.text(1,2.5,'NO',fontsize=25, color='red')
+        pc.text(1,7.5,'YES',fontsize=25, color='green')
+        pc.plot([0.1,0.1,0.1],color='red',)
+        pc.plot([4.9,4.9,4.9],color='red')
+        pc.plot([5.1,5.1,5.1],color='green')
+        pc.plot([9.9,9.9,9.9],color='green')
+        pc.axis([0,2,0,10])
+        pc.set_title("Is region OK? ")
+
+        A1 = point_ans(plt.ginput(1)[0][1])    
+            
+    #Proceed with fitting t################################################
+    xo=range(0,corners[1]-corners[0])
+    yo=range(0,corners[3]-corners[2])
+    Xo, Yo = np.meshgrid(xo, yo)  
+    gauss_fit=gaussfit(im,returnfitimage=True)   
+    # Fit end######
+
+    #Plot Fit    
+
+    pd.plot_wireframe(X, Y, gauss_fit[1],color="red")
+    plt.show()    
+    
+    pc.set_title("Is fit OK? ") 
+    pc.text(1,2.5,'NO',fontsize=25, color='red')
+    pc.text(1,7.5,'YES',fontsize=25, color='green')
+    pc.plot([0.1,0.1,0.1],color='red',)
+    pc.plot([4.9,4.9,4.9],color='red')
+    pc.plot([5.1,5.1,5.1],color='green')
+    pc.plot([9.9,9.9,9.9],color='green')
+    pc.axis([0,2,0,10])            
+    fig.suptitle("Gaussian Fit of Selected Region")       
+    A2 = point_ans(plt.ginput(1)[0][1])
+    if A2 == "Yes":              
+            pa.plot([corners[0],corners[1]],[corners[2],corners[2]],color='green')    
+            pa.plot([corners[0],corners[1]],[corners[3],corners[3]],color='green')  
+            pa.plot([corners[0],corners[0]],[corners[2],corners[3]],color='green')  
+            pa.plot([corners[1],corners[1]],[corners[2],corners[3]],color='green')             
+            pa.set_xlim(0, image.shape[1])
+            pa.set_ylim(image.shape[0], 0)            
+            pc.set_title("Fit is OK") 
+            output[i,1]= gauss_fit[0][0] #height(offset)
+            output[i,0]= gauss_fit[0][1] # amplitude
+            output[i,2]= gauss_fit[0][4]*pixel_size_x #x width in nm
+            output[i,3]= gauss_fit[0][5]*pixel_size_y #y_width in nm                 
+            output[i,5]= abs(np.max(gauss_fit[1])-np.max(im)) #total height error
+            output[i,4]= gauss_fit[0][0] + gauss_fit[0][1] #total height
+
+    fig.delaxes(pd)
+    fig.delaxes(pb)
+    plt.draw()        
+    pb = plt.subplot2grid((5, 3), (4,2),colspan=1,rowspan=1)       
+    pd = plt.subplot2grid((5, 3), (3,0),colspan=2,rowspan=2, projection='3d')
+    fig.suptitle("DONE",fontsize=25)
+print(output)   
+
+#np.savetxt(file_name+'gauss_fit' %(iter_on_file), output, fmt='%.6f', delimiter=';',comments='Height,Amplitude,X_width,Y_width (all in nm)')  
+
+np.savetxt(file_name+'gauss_fit', output, fmt='%.6f', delimiter=';',comments='Height,Amplitude,X_width,Y_width (all in nm)')  
+
+
