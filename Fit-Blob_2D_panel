@@ -34,7 +34,7 @@ runfile('fun_select.py')
 
 ################## Import files
 
-file_name="example.txt"
+file_name="example_scan_to_fit.txt"
 iter_on_file=1
 image= np.loadtxt(file_name,skiprows=5)
 
