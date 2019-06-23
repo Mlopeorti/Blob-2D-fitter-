@@ -1,16 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Dec 22 15:56:37 2016
-
-@author: mlopezo
-"""
 ####################################################################################################################
-
 # This scripts uses Adam Ginsburg Gaussfitter code to fit 2D Gaussians
-
 #https://github.com/keflavich/gaussfitter
+####################################################################################################################
+# Implemented to analyze Tunnel Current Spectroscopy data in publication:
+
+#doi.org/10.26434/chemrxiv.7945379.v1
+
+#Electrochemically Gated Long Distance Charge Transport in Photosystem I
+
+#Montserrat López Martínez, Manuel López Ortiz, Maria Elena Antinori, Emilie Wientjes, Roberta Croce,Ismael Díez-Pérez, Pau Gorostiza
+
+#Manuel López Ortiz -> Mlopeorti @ github
+
+# Institute for Bioengineering of Catalonia (IBEC), The Barcelona Institute of Science and Technology (BIST)
+############################################################################################################################################
+
 
 ################ HOW TO USE THE SCRIPT ##############################################################################
+
+
+Created on Thu Dec 22 15:56:37 2016
+
+@author: mlopeorti
+"""
 
 # Image files to treat have to be in .txt format and contain a matrix with heigth of each pixel (grayscale no rgb) 
 # with "." as decimal separator and "tab" for column separator.
