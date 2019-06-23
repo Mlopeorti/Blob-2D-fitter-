@@ -4,7 +4,7 @@
 # This scripts uses Adam Ginsburg Gaussfitter code to fit 2D Gaussians
 #https://github.com/keflavich/gaussfitter
 ####################################################################################################################
-# Implemented to analyze Tunnel Current Spectroscopy data in publication:
+# Implemented to analyze Tunnel Current Scans data in publication:
 
 #doi.org/10.26434/chemrxiv.7945379.v1
 
